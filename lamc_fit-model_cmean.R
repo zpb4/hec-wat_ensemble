@@ -129,6 +129,6 @@ saveRDS(gl_par_arr,'fit/gl_par_arr_cm.rds')
 saveRDS(var_coefs,'fit/var_coefs_cm.rds')
 
 #remove variables and clean environment
-#rm(list=ls());gc()
+rm(list=ls());gc()
 
 ############################################END#########################################################

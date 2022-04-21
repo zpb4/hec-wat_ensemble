@@ -7,7 +7,7 @@ initial: 2-8-2022
 
 Overview: Contains data and code to fit a multivariate statistical model to HEFS ensemble forecast data of Lake Mendocino inflow for period of 10-01-1985 to 09-30-2010. Raw HEFS data are output at hourly forecast timesteps out to 14 days lead, while model framework condenses output to daily timescales to enable fitting between observations at daily scale and forecasts. Inputs are sequential .csv files produced by CNRFC and output is a m x e x n x l array, where m is the number of synthetic ensembles, e is the ensemble size (61 members in this case), n is the length of the observational data, and l is the number of leads.
 
-Repository - 'ensemble-will':
+Repository - 'hec-wat_syn_fcst_ensemble':
 
 	Sub directory - 'data': 
 		
@@ -32,6 +32,11 @@ Repository - 'ensemble-will':
 		*Note: .xlsx file is a single workbook for each synthetic ensemble, .feather saves individual ensemble dataframes for each 		synthetic generation run in a single sub-directory
 	'ens_testing': A short script to plot results and verify normal operation
 		
-		
+	Added files (EAH, April 2022):
+	'raw_data_process.R': adapted for ADOC, generalized for other locations as much as possible; prefixes output files with location code.
+	'adoc_fit-model_cmean.R': fitting for ADOC location, generalized except for obs inflow file columns; prefixes fitted files with location code
+	'adoc_synthetic-gen_cmean.R': synthetics generation for ADOC, generalized from LAMC version.
+	'diagnostics.R': ggplot script to show synthetic ensemble skill against HEFS skill
+
 	
 		
