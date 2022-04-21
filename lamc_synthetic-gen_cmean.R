@@ -44,7 +44,8 @@ obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 #3. Define observed data matrix to create synthetic samples
 st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
 end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
-new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),5]
+#new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),5]
+new_obs = read.csv("C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 50\\obsTimeseries.csv")$Prado
 new_obs[new_obs<0]<-0
 new_obs_mat<-cbind(matrix(rep(new_obs,leads),ncol=leads))
 

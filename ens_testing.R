@@ -2,7 +2,7 @@
 
 setwd('h:/firo_lamc/ensemble-will/')
 
-syn_lam <- readRDS("out/syn_lamc_out.rds")
+syn_lam <- readRDS("out/ADOC1_syn_lamc_out.rds")
 
 syn_lam_out <- syn_lam[1,,,]
 
