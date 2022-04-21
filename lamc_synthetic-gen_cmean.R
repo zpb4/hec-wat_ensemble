@@ -247,6 +247,6 @@ for(m in 1:n){
 }
 
 #remove variables and clean environment
-#rm(list=ls());gc()
+rm(list=ls());gc()
 
 ###################################END######################################
