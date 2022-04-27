@@ -1,5 +1,8 @@
 #Script to generate synthetic forecasts with parameters from '...fit' script
 
+# set seed to get repeatable results
+#set.seed(856)
+
 #setwd('h:/firo_lamc/hec-wat_ensemble/')
 library(fGarch)
 library(BigVAR)
@@ -23,13 +26,13 @@ loc <- "ADOC1"
 
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
-#Define simulation start in year, month, and day; minimum 1948-10-01
- st_yr <- 2003 #4 digit year
+#Define s start in year, month, and day; minimum 1948-10-01
+ st_yr <- 1993 #4 digit year
  st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
  st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
  
 #Define simulation end in year, month, and day; maximum 2010-09-30
- end_yr <- 2008 #4 digit year
+ end_yr <- 1995 #4 digit year
  end_mo <- 09 #specify with leading zero for single digits, e.g. '01' instead of '1'
  end_dy <- 30 #specify with leading zero for single digits, e.g. '01' instead of '1'
 
@@ -47,7 +50,8 @@ obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
 end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
 new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),2]
-#new_obs = read.csv("C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 50\\obsTimeseries.csv")$Prado
+#new_obs_df = read.csv("C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 20\\obsTimeseries.csv")
+#new_obs = new_obs_df$Prado
 new_obs[new_obs<0]<-0
 new_obs_mat<-cbind(matrix(rep(new_obs,leads),ncol=leads))
 
@@ -251,42 +255,10 @@ for(m in 1:n){
   #saveRDS(syn_hefs_resid, paste0('out/', loc, '_syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
 }
 
+source("diagnostics.R")
 #remove variables and clean environment
-#rm(list=ls());gc()
+rm(list=ls());gc()
 
 ###################################END######################################
-
-
-# diagnostics code
-
-require(reshape2)
-require(ggplot2)
-require(plyr)
-# create tidy table for ggploting
-obsdf = data.frame(flow=new_obs, day=1:length(new_obs))
-
-# This is a silly plot, but useful to validate that I have dimensions right - don't use it.
-#plotEnsemble = 1
-#ensFcst = melt(t(syn_hefs_flow[1,plotEnsemble,,]), varnames=c("lead", "day"), value.name="flow", )
-#ensFcst$fcst.day = ensFcst$day + ensFcst$lead
-#ggplot() + theme_bw() +
-#  geom_line(data=ensFcst, aes(x=fcst.day, y=flow, group=day)) + 
-#  geom_line(data=obsdf, aes(x=day, y=flow), color="blue")
-
-# create summary plots
-synFcsts = melt(syn_hefs_flow[1,,,], varnames=c("ens_num", "day", "lead"), value.name="flow")
-fcstLead=3
-sumSynFcsts = ddply(subset(synFcsts, lead==fcstLead), .(day), 
-                    function(df){
-                      p = c(0.05, 0.5, 0.95)
-                      data.frame(percentiles=paste0("p", p), flow=quantile(df$flow, p))
-                    })
-sumSynFcsts$day = sumSynFcsts$day + fcstLead
-rangeSynFcsts = dcast(sumSynFcsts, day ~ percentiles, value.var="flow")
-ggplot() + theme_bw() +
-  geom_ribbon(data=rangeSynFcsts, aes(x=day, ymin=p0.05, ymax=p0.95), fill="lightgrey") + 
-  geom_line(data=rangeSynFcsts, aes(x=day, y=p0.5), color="black") +
-  geom_line(data=obsdf, aes(x=day, y=flow), color="blue") + 
-  scale_y_continuous(limits=c(-10,2e4))
 
 

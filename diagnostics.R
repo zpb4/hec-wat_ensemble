@@ -11,13 +11,20 @@ meltForecasts <- function(fcstMatrix){
   melt(fcstMatrix, varnames=c("ens_num", "day", "lead"), value.name="flow")
 }
 
+# compute percentiles
 summarizeForecasts <- function(fcstDF, fcstLead=3, p=c(0, 0.05, 0.5, 0.95, 1)){
   ddply(subset(fcstDF, lead==fcstLead), .(day), 
         function(df){
           data.frame(percentiles=paste0("p", p), flow=quantile(df$flow, p))
         })
 }
-flipForecastSummary <- function(sumFcst) dcast(sumFcst, day ~ percentiles, value.var="flow")
+
+# tidy percentiles
+flipForecastSummary <- function(sumFcst) {
+  fcstDF = dcast(sumFcst, day ~ percentiles, value.var="flow")
+  fcstDF$day = as.Date(ix_sim)
+  fcstDF
+}
 
 # This is a silly plot, but useful to validate that I have dimensions right - don't use it.
 #plotEnsemble = 1
@@ -29,7 +36,7 @@ flipForecastSummary <- function(sumFcst) dcast(sumFcst, day ~ percentiles, value
 
 
 # gather data
-obsdf = data.frame(flow=new_obs, day=1:length(new_obs))
+obsdf = data.frame(flow=new_obs, day=ix_sim)
 # create tidy table of synthetics for ggploting
 synFcsts = meltForecasts(syn_hefs_flow[1,,,])
 # create same tidy table of HEFS
@@ -42,14 +49,17 @@ sumHefsFcsts = summarizeForecasts(hefsFcsts)
 rangeSynFcsts = flipForecastSummary(sumSynFcsts)
 rangeHefsFcsts = flipForecastSummary(sumHefsFcsts)
 
-fcstSkillPlot <- function(rangeFcsts){
+fcstSkillPlot <- function(rangeFcsts, pltName){
   ggplot() + theme_bw() +
     geom_ribbon(data=rangeFcsts, aes(x=day, ymin=p0.05, ymax=p0.95), fill="lightgrey") + 
-    geom_line(data=rangeFcsts, aes(x=day, y=p0.5), color="black") +
+    geom_line(data=rangeFcsts, aes(x=day, y=p0.5), color="black") + scale_color_manual(labels="median") + 
     geom_line(data=rangeFcsts, aes(x=day, y=p1), color="grey", linetype='dashed') +
     geom_line(data=rangeFcsts, aes(x=day, y=p0), color="grey", linetype='dashed') +
-    geom_line(data=obsdf, aes(x=day-3, y=flow), color="blue") + 
-    scale_y_continuous(limits=c(-10,2e4))
+    geom_line(data=obsdf, aes(x=day, y=flow), color="blue") + 
+    scale_y_continuous(limits=c(-10,2e4)) +
+    scale_x_date() + labs(title=pltName, y="flow [cfs]", x="date")
 }
-fcstSkillPlot(rangeSynFcsts)
-fcstSkillPlot(rangeHefsFcsts)
+
+dateRange = paste0(ix_sim[1], " to ", tail(ix_sim,1))
+print(fcstSkillPlot(rangeSynFcsts, paste0("Synthetic forecasts: ", dateRange)))
+#fcstSkillPlot(rangeHefsFcsts, paste0("HEFS forecasts: ", dateRange))
