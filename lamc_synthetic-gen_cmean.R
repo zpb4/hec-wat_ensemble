@@ -10,6 +10,12 @@ source('GL_maineqs.R')
 #date vector for fitted data
 ix<-seq(as.Date('1985-10-15'),as.Date('2010-09-30'),'day')
 ix2<-as.POSIXlt(ix)
+
+#date vector for hefs sub-indexing
+ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
+hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
+
+#date vector for full observational record
 ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
 hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
 
@@ -17,20 +23,39 @@ hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
 
 #1a. 'Standard' parameters that you likely won't want to change
 leads <- 14 #daily leads, should stay as 14 for HEFS
-ens_num <- 61 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
+ens_num <- 2 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
 ar <- 3 #no. of lags in vector auto-regressive model; also don't recommend changing
 
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
 #Define simulation start in year, month, and day; minimum 1948-10-01
- st_yr <- 1950 #4 digit year
- st_mo <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
- st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
+ st_yr <- 1993 #4 digit year
+ st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
+ st_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
  
 #Define simulation end in year, month, and day; maximum 2010-09-30
- end_yr <- 1952 #4 digit year
- end_mo <- 07 #specify with leading zero for single digits, e.g. '01' instead of '1'
- end_dy <- 09 #specify with leading zero for single digits, e.g. '01' instead of '1'
+ end_yr <- 1994 #4 digit year
+ end_mo <- 04 #specify with leading zero for single digits, e.g. '01' instead of '1'
+ end_dy <- 30 #specify with leading zero for single digits, e.g. '01' instead of '1'
+
+#change 1: code alerts to erroneous entries but will not stop script
+err_code<-c()
+if(end_yr<st_yr){stop(print('end year must be greater than or equal to start year'))} 
+if(end_yr==st_yr & end_mo<st_mo){stop(print('end month must be greater than start month if same year'))}
+if(end_yr==st_yr & end_mo==st_mo & end_dy<st_dy){stop(print('end day must be greater than start day if same year and month'))}
+
+#change 1: define a 'sampling month sequence' that is flexible for shorter scenario generation
+samp_mo_seq<-1:12 #baseline assumption
+
+#change 1: if same year and not full year, ensure sample month sequence only includes desired months
+if(st_yr==end_yr & length(st_mo:end_mo)<12){
+  samp_mo_seq<-st_mo:end_mo
+}
+
+#change 1: if crossing into another year but no further, then define the appropriate crossover sequency of months
+if((end_yr-st_yr)==1){
+  samp_mo_seq<-c(st_mo:12,1:end_mo)
+}
 
 
 #2. Read in raw observed data
@@ -128,9 +153,12 @@ for(e in 1:ens_num){
 #I could explain in more detail in person, but recommend to just accept as is for now
 
 yr_idx<-ixx_sim$year
-yr_idx_lst<-vector('list',12)
 
-for(i in 1:12){
+#change 1: only include sampled months for shorter periods
+yr_idx_lst<-vector('list',length(samp_mo_seq)) 
+
+#change 1: only include sampled months for shorter periods
+for(i in samp_mo_seq){  
   seas3<-which(ixx_sim$mon==(i-1))
   yr_idx_lst[[i]]<-yr_idx[seas3]
 }
@@ -141,6 +169,17 @@ edyr_idx<-end_yr-1900
 yr_seq<-c(rep(styr_idx,length=(13-st_mo)),rep((styr_idx+1):(edyr_idx-1),each=12),rep((edyr_idx),length=end_mo))
 mo_seq<-c(st_mo:12,rep(1:12,length((styr_idx+1):(edyr_idx-1))),1:end_mo)
 
+#change 1: for generation of short periods in the same years
+if(st_yr==end_yr & length(st_mo:end_mo)<12){
+  yr_seq<-rep(styr_idx,length(samp_mo_seq))
+  mo_seq<-samp_mo_seq
+}
+
+#change 1: same as above, but for crossover year situations
+if((end_yr-st_yr)==1){
+  yr_seq<-c(rep(styr_idx,length=(13-st_mo)),rep(edyr_idx,length=end_mo))
+  mo_seq<-samp_mo_seq
+}
 
 #5b. knn set up
 seas<-which(ix2$mon==0) #find length of january monthly subset of fitted data
@@ -165,9 +204,10 @@ print(Sys.time()) #start time
 #Script generates 'n' ensembles of size 'ens_num'
 for(m in 1:n){
   
-  knn_lst<-vector('list',12)
+  knn_lst<-vector('list',length(samp_mo_seq))
   
-  for(i in 1:12){
+  #change 1: only include sampled months for shorter periods
+  for(i in samp_mo_seq){ ###
     knn_vec<-c()
     seas<-which(ix2$mon==(i-1)) #define fitted data monthly index
     seas_sim<-which(ixx_sim$mon==(i-1)) #define synthetic timespan monthly index
@@ -195,10 +235,11 @@ for(m in 1:n){
   for(e in 1:ens_num){
   
     #KNN process to generate array of 'ens_num' samples
-    syn_cop_knn<-vector('list',12)
+    syn_cop_knn<-vector('list',length(samp_mo_seq))
     syn_ecop_knn<-syn_ecop[m,e,,]
     
-    for(i in 1:12){
+    #change 1: only include sampled months for shorter periods
+    for(i in samp_mo_seq){ ###
       seas<-which(ix2$mon==(i-1))
       seas_sim<-which(ixx_sim$mon==(i-1))
       synecop_knn<-syn_ecop_knn[seas,]
@@ -246,6 +287,7 @@ for(m in 1:n){
   #saveRDS(syn_hefs_resid, 'out/syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
 }
 
+if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
 #remove variables and clean environment
 #rm(list=ls());gc()
 
