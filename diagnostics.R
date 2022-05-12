@@ -2,29 +2,8 @@
 # ensemble forecast generation diagnostics code
 # this expects you to turn off environment cleaning in synthetic generation script
 
-require(reshape2)
 require(ggplot2)
-require(plyr)
 
-# function to convert forecasts to useful formats
-meltForecasts <- function(fcstMatrix){
-  melt(fcstMatrix, varnames=c("ens_num", "day", "lead"), value.name="flow")
-}
-
-# compute percentiles
-summarizeForecasts <- function(fcstDF, fcstLead=3, p=c(0, 0.05, 0.5, 0.95, 1)){
-  ddply(subset(fcstDF, lead==fcstLead), .(day), 
-        function(df){
-          data.frame(percentiles=paste0("p", p), flow=quantile(df$flow, p))
-        })
-}
-
-# tidy percentiles
-flipForecastSummary <- function(sumFcst) {
-  fcstDF = dcast(sumFcst, day ~ percentiles, value.var="flow")
-  fcstDF$day = as.Date(ix_sim)
-  fcstDF
-}
 
 # This is a silly plot, but useful to validate that I have dimensions right - don't use it.
 #plotEnsemble = 1
@@ -34,6 +13,7 @@ flipForecastSummary <- function(sumFcst) {
 #  geom_line(data=ensFcst, aes(x=fcst.day, y=flow, group=day)) + 
 #  geom_line(data=obsdf, aes(x=day, y=flow), color="blue")
 
+source("fcst_reformatters.R")
 
 # gather data
 obsdf = data.frame(flow=new_obs, day=ix_sim)
@@ -43,11 +23,11 @@ synFcsts = meltForecasts(syn_hefs_flow[1,,,])
 hefsFcsts = meltForecasts(hefs_mat[,which(ix2 %in% ixx_sim),])
 
 # create summary plots
-sumSynFcsts = summarizeForecasts(synFcsts)
-sumHefsFcsts = summarizeForecasts(hefsFcsts)
+sumSynFcsts = summarizeForecasts(synFcsts, fcstLead=3)
+sumHefsFcsts = summarizeForecasts(hefsFcsts, fcstLead=3)
   
 rangeSynFcsts = flipForecastSummary(sumSynFcsts)
-rangeHefsFcsts = flipForecastSummary(sumHefsFcsts)
+#rangeHefsFcsts = flipForecastSummary(sumHefsFcsts)
 
 fcstSkillPlot <- function(rangeFcsts, pltName){
   ggplot() + theme_bw() +
@@ -62,4 +42,4 @@ fcstSkillPlot <- function(rangeFcsts, pltName){
 
 dateRange = paste0(ix_sim[1], " to ", tail(ix_sim,1))
 print(fcstSkillPlot(rangeSynFcsts, paste0("Synthetic forecasts: ", dateRange)))
-#fcstSkillPlot(rangeHefsFcsts, paste0("HEFS forecasts: ", dateRange))
+#print(fcstSkillPlot(rangeHefsFcsts, paste0("HEFS forecasts: ", dateRange)))

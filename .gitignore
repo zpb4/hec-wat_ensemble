@@ -7,3 +7,5 @@
 fit/
 data/
 out/
+*.db
+*.db-journal

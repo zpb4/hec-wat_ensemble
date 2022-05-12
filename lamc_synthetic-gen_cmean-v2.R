@@ -1,9 +1,6 @@
 #Script to generate synthetic forecasts with parameters from '...fit' script
 
-# set seed to get repeatable results
-#set.seed(856)
-
-#setwd('h:/firo_lamc/hec-wat_ensemble/')
+setwd('h:/firo_lamc/hec-wat_ensemble/')
 library(fGarch)
 library(BigVAR)
 library(stringr)
@@ -14,11 +11,11 @@ source('GL_maineqs.R')
 ix<-seq(as.Date('1985-10-15'),as.Date('2010-09-30'),'day')
 ix2<-as.POSIXlt(ix)
 
-# is this the same as the next block, diff said the other block was added.
+#date vector for hefs sub-indexing
 ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
 hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
 
-#date vector for hefs sub-indexing
+#date vector for full observational record
 ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
 hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
 
@@ -26,23 +23,21 @@ hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
 
 #1a. 'Standard' parameters that you likely won't want to change
 leads <- 14 #daily leads, should stay as 14 for HEFS
-ens_num <- 68 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
+ens_num <- 2 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
 ar <- 3 #no. of lags in vector auto-regressive model; also don't recommend changing
-loc <- "ADOC1"
 
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
-#Define s start in year, month, and day; minimum 1948-10-01
- st_yr <- 1991 #4 digit year
+#Define simulation start in year, month, and day; minimum 1948-10-01
+ st_yr <- 1993 #4 digit year
  st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
- st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
+ st_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
  
 #Define simulation end in year, month, and day; maximum 2010-09-30
- end_yr <- 1992 #4 digit year
- end_mo <- 02 #specify with leading zero for single digits, e.g. '01' instead of '1'
- end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
- 
- 
+ end_yr <- 1994 #4 digit year
+ end_mo <- 04 #specify with leading zero for single digits, e.g. '01' instead of '1'
+ end_dy <- 30 #specify with leading zero for single digits, e.g. '01' instead of '1'
+
 #change 1: code alerts to erroneous entries but will not stop script
 err_code<-c()
 if(end_yr<st_yr){stop(print('end year must be greater than or equal to start year'))} 
@@ -54,18 +49,18 @@ samp_mo_seq<-1:12 #baseline assumption
 
 #change 1: if same year and not full year, ensure sample month sequence only includes desired months
 if(st_yr==end_yr & length(st_mo:end_mo)<12){
- samp_mo_seq<-st_mo:end_mo
+  samp_mo_seq<-st_mo:end_mo
 }
 
 #change 1: if crossing into another year but no further, then define the appropriate crossover sequency of months
 if((end_yr-st_yr)==1){
- samp_mo_seq<-c(st_mo:12,1:end_mo)
+  samp_mo_seq<-c(st_mo:12,1:end_mo)
 }
 
+
 #2. Read in raw observed data
-inf<-read.csv('data/adoc_inflow.csv')
-colnames(inf) <- c("GMT", "ADOC", "OCWD")
-obs<-inf[which(inf$GMT=='10/15/1985 12:00'):which(inf$GMT=='9/30/2010 12:00'),2] # 2 is ADOC
+inf<-read.csv('data/LAMC_local.csv')
+obs<-inf[which(inf$GMT=='10/15/1985 12:00'):which(inf$GMT=='9/30/2010 12:00'),5]
 obs[obs<0]<-0
 
 #2a. Create matrix of observations matching forecast
@@ -74,20 +69,16 @@ obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 #3. Define observed data matrix to create synthetic samples
 st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
 end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
-new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),2]
-#new_obs_df = read.csv("C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 20\\obsTimeseries.csv")
-#new_obs = new_obs_df$Prado
+new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),5]
 new_obs[new_obs<0]<-0
 new_obs_mat<-cbind(matrix(rep(new_obs,leads),ncol=leads))
 
 
 #-------------------------------------------------------------------------------------------------
 #4) Create array of n (# of desired sample runs) Schaake Shuffled sequences for KNN
-ats<-readRDS(paste0('fit/', loc, '_ats_cm.rds'))
-gl_par_arr<-readRDS(paste0('fit/', loc, '_gl_par_arr_cm.rds'))
+ats<-readRDS('fit/ats_cm.rds')
+gl_par_arr<-readRDS('fit/gl_par_arr_cm.rds')
 syn_ecop<-array(NA,c(n,ens_num,dim(obs_mat)))
-
-print(paste(0,Sys.time()))
 
 for(m in 1:n){
   for(e in 1:ens_num){
@@ -110,7 +101,7 @@ for(m in 1:n){
   print(paste(m,Sys.time()))
 }
 
-saveRDS(syn_ecop, paste0('out/', loc, '_syn_ecop_cm.rds'))
+saveRDS(syn_ecop,'out/syn_ecop_cm.rds')
 
 #-------------------------------------------------------------------------------------------------------
 #5) Synthetic Generation
@@ -130,9 +121,9 @@ cond_mean<-function(Qfit,Qsim,f){
 }
 
 #forecast matrices for fitting
-hefs_mat<-readRDS(paste0('data/',loc,'_hefs_ens_forc.rds'))
+lamc_hefs<-readRDS('data/lamc_hefs_ens_forc.rds')
 #scale by 1000 to convert from kcfs to cfs
-hefs_mat<-hefs_mat[,hefs_idx,]*1000
+lamc_hefs<-lamc_hefs[,hefs_idx,]*1000
 
 cmean_sim<-array(NA,c(ens_num,length(ix_sim),leads))
 
@@ -143,7 +134,7 @@ for(e in 1:ens_num){
   for(i in 1:12){
     seas<-which(ix2$mon==(i-1))
     seas_sim<-which(ixx_sim$mon==(i-1))
-    sim_inf<-hefs_mat[e,seas,]
+    sim_inf<-lamc_hefs[e,seas,]
     obs_inf<-obs_mat[seas,]
     obs_sim<-new_obs_mat[seas_sim,]
     cmean_inf<-array(NA,dim(obs_sim))
@@ -198,10 +189,10 @@ tot<-sum(rep(1,knn) / 1:knn)
 wts<-rep(1,knn) / 1:knn / rep(tot,knn) #weights for kernel weighted sampling
 
 #5c. load required fit data
-syn_ecop<-readRDS(paste0('out/', loc, '_syn_ecop_cm.rds'))
-var_coefs<-readRDS( paste0('fit/', loc, '_var_coefs_cm.rds'))
-gl_par_arr<-readRDS( paste0('fit/', loc, '_gl_par_arr_cm.rds'))
-cmean<-readRDS( paste0('fit/', loc, '_cmean.rds'))
+syn_ecop<-readRDS('out/syn_ecop_cm.rds')
+var_coefs<-readRDS('fit/var_coefs_cm.rds')
+gl_par_arr<-readRDS('fit/gl_par_arr_cm.rds')
+cmean<-readRDS('fit/cmean.rds')
 
 #5d. define matrices to store synthetic forecast residuals and forecasts themselves
 syn_hefs_resid<-array(NA,c(n,ens_num,length(ixx_sim),leads))
@@ -258,7 +249,6 @@ for(m in 1:n){
       syn_cop_knn[[i]]<-syncop
     }
     
-    # Minimum of 3-months of spin-up for the model? -EAH
     #initial set-up of 'app_mat' which is matrix of (t-3:t-1) previous month errors to append to current month
     #matrix to maintain VAR continuity
     app_mat<-syn_cop_knn[[mo_seq[1]]][1:3,]
@@ -293,15 +283,12 @@ for(m in 1:n){
     }
   }
   print(paste(m,Sys.time())) #keep track of progress, verbose
-  saveRDS(syn_hefs_flow,  paste0('out/', loc, '_syn_hefs_flow_cm.rds'))
-  #saveRDS(syn_hefs_resid, paste0('out/', loc, '_syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
+  saveRDS(syn_hefs_flow, 'out/syn_hefs_flow_cm.rds')
+  #saveRDS(syn_hefs_resid, 'out/syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
 }
 
 if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
-source("diagnostics.R")
 #remove variables and clean environment
 #rm(list=ls());gc()
 
 ###################################END######################################
-
-

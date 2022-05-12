@@ -1,14 +1,16 @@
 #Script to generate synthetic forecasts with parameters from '...fit' script
 
 # set seed to get repeatable results
-#set.seed(856)
+set.seed(1234)
 
 #setwd('h:/firo_lamc/hec-wat_ensemble/')
 library(fGarch)
 library(BigVAR)
 library(stringr)
+library(lubridate)
 
 source('GL_maineqs.R')
+#source('wat_helper.R')
 
 #date vector for fitted data
 ix<-seq(as.Date('1985-10-15'),as.Date('2010-09-30'),'day')
@@ -29,38 +31,14 @@ leads <- 14 #daily leads, should stay as 14 for HEFS
 ens_num <- 68 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
 ar <- 3 #no. of lags in vector auto-regressive model; also don't recommend changing
 loc <- "ADOC1"
+use_observed_flows = T # use obs dataset?
+# if false, use this file
+syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
 
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
-#Define s start in year, month, and day; minimum 1948-10-01
- st_yr <- 1991 #4 digit year
- st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
- st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
- 
-#Define simulation end in year, month, and day; maximum 2010-09-30
- end_yr <- 1992 #4 digit year
- end_mo <- 02 #specify with leading zero for single digits, e.g. '01' instead of '1'
- end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
- 
- 
-#change 1: code alerts to erroneous entries but will not stop script
-err_code<-c()
-if(end_yr<st_yr){stop(print('end year must be greater than or equal to start year'))} 
-if(end_yr==st_yr & end_mo<st_mo){stop(print('end month must be greater than start month if same year'))}
-if(end_yr==st_yr & end_mo==st_mo & end_dy<st_dy){stop(print('end day must be greater than start day if same year and month'))}
 
-#change 1: define a 'sampling month sequence' that is flexible for shorter scenario generation
-samp_mo_seq<-1:12 #baseline assumption
-
-#change 1: if same year and not full year, ensure sample month sequence only includes desired months
-if(st_yr==end_yr & length(st_mo:end_mo)<12){
- samp_mo_seq<-st_mo:end_mo
-}
-
-#change 1: if crossing into another year but no further, then define the appropriate crossover sequency of months
-if((end_yr-st_yr)==1){
- samp_mo_seq<-c(st_mo:12,1:end_mo)
-}
+ 
 
 #2. Read in raw observed data
 inf<-read.csv('data/adoc_inflow.csv')
@@ -72,13 +50,63 @@ obs[obs<0]<-0
 obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 
 #3. Define observed data matrix to create synthetic samples
-st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
-end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
-new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),2]
-#new_obs_df = read.csv("C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 20\\obsTimeseries.csv")
-#new_obs = new_obs_df$Prado
+if(use_observed_flows){
+  #Define s start in year, month, and day; minimum 1948-10-01
+  st_yr <- 1986 #4 digit year
+  st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
+  st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
+  
+  #Define simulation end in year, month, and day; maximum 2010-09-30
+  end_yr <- 1987 #4 digit year
+  end_mo <- 03 #specify with leading zero for single digits, e.g. '01' instead of '1'
+  end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
+
+  st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
+  end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
+  
+  new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),2]
+
+} else { # WAT sampled synthetics
+  new_obs_df = read.csv(syntheticFlowFile)
+  new_obs = new_obs_df$Prado
+  # overwrite timestamps used
+  st_timestamp = as.POSIXlt(new_obs_df$GMT[1], format="%m/%d/%Y")
+  st_date = str_replace(as.character(st_timestamp, format="%m/%d/%Y"), fixed(" 24:00"), "")
+  st_yr = year(st_timestamp) 
+  st_mo = month(st_timestamp)
+  st_dy = day(st_timestamp)
+  end_timestamp = as.POSIXlt(new_obs_df$GMT[nrow(new_obs_df)], format="%m/%d/%Y")
+  end_date = str_replace(as.character(end_timestamp, format="%m/%d/%Y"), fixed(" 24:00"), "")
+  end_yr = year(end_timestamp)
+  end_mo = month(end_timestamp)
+  end_dy = day(end_timestamp)
+}
+
+# clean obs data
 new_obs[new_obs<0]<-0
+# create matrix by leads
 new_obs_mat<-cbind(matrix(rep(new_obs,leads),ncol=leads))
+
+## validation of start/end dates
+#change 1: code alerts to erroneous entries but will not stop script
+err_code<-c()
+if(end_yr<st_yr){stop(print('end year must be greater than or equal to start year'))} 
+if(end_yr==st_yr & end_mo<st_mo){stop(print('end month must be greater than start month if same year'))}
+if(end_yr==st_yr & end_mo==st_mo & end_dy<st_dy){stop(print('end day must be greater than start day if same year and month'))}
+
+#change 1: define a 'sampling month sequence' that is flexible for shorter scenario generation
+samp_mo_seq<-1:12 #baseline assumption
+
+#change 1: if same year and not full year, ensure sample month sequence only includes desired months
+if(st_yr==end_yr & length(st_mo:end_mo)<12){
+  samp_mo_seq<-st_mo:end_mo
+}
+
+#change 1: if crossing into another year but no further, then define the appropriate crossover sequency of months
+if((end_yr-st_yr)==1){
+  samp_mo_seq<-c(st_mo:12,1:end_mo)
+}
+
 
 
 #-------------------------------------------------------------------------------------------------
@@ -298,7 +326,12 @@ for(m in 1:n){
 }
 
 if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
+
+# create plots?
 source("diagnostics.R")
+# write out to sqlite file?
+source("syn-hefs_out_tsensembles.R")
+
 #remove variables and clean environment
 #rm(list=ls());gc()
 
