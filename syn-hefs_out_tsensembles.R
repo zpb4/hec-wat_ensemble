@@ -86,7 +86,7 @@ fcstOutToFeather <- function(){
 }
 
 # attempt to do this with rJava!
-fcstToEnsembleFile <- function(ensembleFilename){
+fcstOutToEnsembleFile <- function(ensembleFilename){
   
   # getting the correct Java configuratio (JRE 11)
   Sys.setenv(JAVA_HOME="C:/Programs/jdk-11.0.15+10-jre/")
@@ -98,7 +98,7 @@ fcstToEnsembleFile <- function(ensembleFilename){
 
   # create new database file
   cm = J("hec.SqliteDatabase")$CREATION_MODE$CREATE_NEW
-  db = .jnew("hec/SqliteDatabase", "ensemble_test2_transposed.db", cm)
+  db = .jnew("hec/SqliteDatabase", ensembleFilename, cm)
   # create an ensemble timeseries in Java
   recordID = .jnew("hec/RecordIdentifier", "ADOC", "FLOW")
   ensembleTS = .jnew("hec.ensemble.EnsembleTimeSeries", recordID, "cfs", "inst", "synthetic")
@@ -129,7 +129,7 @@ fcstToEnsembleFile <- function(ensembleFilename){
   db$close()
 }
 
-
+fcstOutToEnsembleFile(paste0(outputDir, "ensemble_test2_transposed.db"))
 #rm(list=ls());gc()
 
 #############################################END############################################

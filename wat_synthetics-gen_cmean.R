@@ -31,9 +31,11 @@ leads <- 14 #daily leads, should stay as 14 for HEFS
 ens_num <- 68 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
 ar <- 3 #no. of lags in vector auto-regressive model; also don't recommend changing
 loc <- "ADOC1"
-use_observed_flows = T # use obs dataset?
+
+use_observed_flows = F # use obs dataset?
 # if false, use this file
-syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
+#syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
+#outputDir = "out\\" # local output
 
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
@@ -52,12 +54,12 @@ obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 #3. Define observed data matrix to create synthetic samples
 if(use_observed_flows){
   #Define s start in year, month, and day; minimum 1948-10-01
-  st_yr <- 1986 #4 digit year
+  st_yr <- 1991 #4 digit year
   st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
   st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
   
   #Define simulation end in year, month, and day; maximum 2010-09-30
-  end_yr <- 1987 #4 digit year
+  end_yr <- 1992 #4 digit year
   end_mo <- 03 #specify with leading zero for single digits, e.g. '01' instead of '1'
   end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
 
@@ -138,7 +140,7 @@ for(m in 1:n){
   print(paste(m,Sys.time()))
 }
 
-saveRDS(syn_ecop, paste0('out/', loc, '_syn_ecop_cm.rds'))
+saveRDS(syn_ecop, paste0(outputDir, loc, '_syn_ecop_cm.rds'))
 
 #-------------------------------------------------------------------------------------------------------
 #5) Synthetic Generation
@@ -226,7 +228,7 @@ tot<-sum(rep(1,knn) / 1:knn)
 wts<-rep(1,knn) / 1:knn / rep(tot,knn) #weights for kernel weighted sampling
 
 #5c. load required fit data
-syn_ecop<-readRDS(paste0('out/', loc, '_syn_ecop_cm.rds'))
+syn_ecop<-readRDS(paste0(outputDir, loc, '_syn_ecop_cm.rds'))
 var_coefs<-readRDS( paste0('fit/', loc, '_var_coefs_cm.rds'))
 gl_par_arr<-readRDS( paste0('fit/', loc, '_gl_par_arr_cm.rds'))
 cmean<-readRDS( paste0('fit/', loc, '_cmean.rds'))
@@ -321,8 +323,8 @@ for(m in 1:n){
     }
   }
   print(paste(m,Sys.time())) #keep track of progress, verbose
-  saveRDS(syn_hefs_flow,  paste0('out/', loc, '_syn_hefs_flow_cm.rds'))
-  #saveRDS(syn_hefs_resid, paste0('out/', loc, '_syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
+  saveRDS(syn_hefs_flow,  paste0(outputDir, loc, '_syn_hefs_flow_cm.rds'))
+  #saveRDS(syn_hefs_resid, paste0(outputDir, loc, '_syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
 }
 
 if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
