@@ -1,9 +1,5 @@
 #Script to generate synthetic forecasts with parameters from '...fit' script
 
-# set seed to get repeatable results
-set.seed(1234)
-
-#setwd('h:/firo_lamc/hec-wat_ensemble/')
 library(fGarch)
 library(BigVAR)
 library(stringr)
@@ -16,10 +12,6 @@ source('GL_maineqs.R')
 ix<-seq(as.Date('1985-10-15'),as.Date('2010-09-30'),'day')
 ix2<-as.POSIXlt(ix)
 
-# is this the same as the next block, diff said the other block was added.
-ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
-hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
-
 #date vector for hefs sub-indexing
 ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
 hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
@@ -31,14 +23,13 @@ leads <- 14 #daily leads, should stay as 14 for HEFS
 ens_num <- 68 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
 ar <- 3 #no. of lags in vector auto-regressive model; also don't recommend changing
 loc <- "ADOC1"
+#1b. Primary user defined parameters to change as desired
+n <- 1 #no. of ensemble sets desired
 
 use_observed_flows = F # use obs dataset?
 # if false, use this file
 #syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
 #outputDir = "out\\" # local output
-
-#1b. Primary user defined parameters to change as desired
-n <- 1 #no. of ensemble sets desired
 
  
 
@@ -113,8 +104,8 @@ if((end_yr-st_yr)==1){
 
 #-------------------------------------------------------------------------------------------------
 #4) Create array of n (# of desired sample runs) Schaake Shuffled sequences for KNN
-ats<-readRDS(paste0('fit/', loc, '_ats_cm.rds'))
-gl_par_arr<-readRDS(paste0('fit/', loc, '_gl_par_arr_cm.rds'))
+ats<-readRDS(paste0(forecastFitDir, loc, '_ats_cm.rds'))
+gl_par_arr<-readRDS(paste0(forecastFitDir, loc, '_gl_par_arr_cm.rds'))
 syn_ecop<-array(NA,c(n,ens_num,dim(obs_mat)))
 
 print(paste(0,Sys.time()))
@@ -160,7 +151,7 @@ cond_mean<-function(Qfit,Qsim,f){
 }
 
 #forecast matrices for fitting
-hefs_mat<-readRDS(paste0('data/',loc,'_hefs_ens_forc.rds'))
+hefs_mat<-readRDS(paste0(scriptDataDir,loc,'_hefs_ens_forc.rds'))
 #scale by 1000 to convert from kcfs to cfs
 hefs_mat<-hefs_mat[,hefs_idx,]*1000
 
@@ -229,9 +220,9 @@ wts<-rep(1,knn) / 1:knn / rep(tot,knn) #weights for kernel weighted sampling
 
 #5c. load required fit data
 syn_ecop<-readRDS(paste0(outputDir, loc, '_syn_ecop_cm.rds'))
-var_coefs<-readRDS( paste0('fit/', loc, '_var_coefs_cm.rds'))
-gl_par_arr<-readRDS( paste0('fit/', loc, '_gl_par_arr_cm.rds'))
-cmean<-readRDS( paste0('fit/', loc, '_cmean.rds'))
+var_coefs<-readRDS( paste0(forecastFitDir, loc, '_var_coefs_cm.rds'))
+gl_par_arr<-readRDS( paste0(forecastFitDir, loc, '_gl_par_arr_cm.rds'))
+cmean<-readRDS( paste0(forecastFitDir, loc, '_cmean.rds'))
 
 #5d. define matrices to store synthetic forecast residuals and forecasts themselves
 syn_hefs_resid<-array(NA,c(n,ens_num,length(ixx_sim),leads))
@@ -330,12 +321,14 @@ for(m in 1:n){
 if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
 
 # create plots?
-source("diagnostics.R")
+#source("diagnostics.R")
 # write out to sqlite file?
-source("syn-hefs_out_tsensembles.R")
+#source("syn-hefs_out_tsensembles.R")
 
 #remove variables and clean environment
-#rm(list=ls());gc()
+#if(useGC){
+#  rm(list=ls());gc()
+#}
 
 ###################################END######################################
 

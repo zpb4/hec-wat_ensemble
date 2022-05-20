@@ -6,9 +6,9 @@
 # Functions to parses a configuration file from WAT's "RunRCmd" script and
 # unpack into environment if needed
 require(rjson)
-require(tcltk)
 
-# just a check that we got here
+# just a check that we got here from WAT
+#require(tcltk)
 #msgBox <- tkmessageBox(title = "WAT Compute",
 #                       message = "Hello, WAT World!", icon = "info", type = "ok")
 
@@ -19,22 +19,49 @@ scriptArgs = commandArgs(trailingOnly=TRUE)
 #msgBox <- tkmessageBox(title = "WAT Compute",
 #                       message = s, icon = "info", type = "ok")
 
+
+# function to read JSON config file
 parseConfigFile <- function(configFileName){
   jsonObj = fromJSON(file=configFileName)
   return(jsonObj)
 }
-config = parseConfigFile(scriptArgs[1])
+
+# function to unpacks json values into namespace
+setVars <- function(jsonConfig){
+  for(i in 1:length(jsonConfig)){
+    assign(names(jsonConfig[i]),jsonConfig[i],env=parent.frame(n=1))
+  }
+}
+
+
+# read metadata inputs from WAT
+eventConfig = parseConfigFile(scriptArgs[1])
+# set synthetic flows file to generate forecasts for
 syntheticFlowFile = scriptArgs[2]
 
-# print(config)
+# read config file for script - this should specify a few folder names and other variables
+# comment out defintions in in other scripts and add to this file
+scriptConfig = parseConfigFile(paste0(eventConfig$Outputs$`Watershed Directory`, "synForecasts\\forecastConfig.json"))
+# use this to unpack config variables that we turn off in wat_synthetics-...
+setVars(scriptConfig)
 
 # seed needs to vary by integer - WAT's event random number isn't sufficient
-set.seed(config$Seeds$`Event Seed` * config$Indices$`Lifecycle Number`)
+set.seed(eventConfig$Randoms$`Event Randoms` * eventConfig$Indices$`Lifecycle Number`)
 
 # Set directory for output
-outputDir = paste0(config$Outputs$`Run Directory`, "..\\") # one level up, being lazy
+outputDir = paste0(eventConfig$Outputs$`Run Directory`, "..\\") # one level up, but being lazy
 
 # Finally source WAT forecast generator
 # Would like to do this all in the watershed at some point
-setwd("C:\\projects\\Prado_WAT_FIRO_Dev\\hec-wat_ensemble")
+#setwd("C:\\projects\\Prado_WAT_FIRO_Dev\\hec-wat_ensemble")
+# OR
+setwd(paste0(eventConfig$Outputs$`Watershed Directory`, scriptDir))
 source("wat_synthetics-gen_cmean.R")
+
+# write out to sqlite file?
+source("syn-hefs_out_tsensembles.R")
+
+#remove variables and clean environment
+if(useGC){
+  rm(list=ls());gc()
+}

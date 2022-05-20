@@ -97,8 +97,7 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
   .jaddClassPath("C:/Projects/Prado_WAT_FIRO_Dev/FIRO_TSEnsembles/FIRO_TSEnsembles/runtime/sqlite-jdbc-3.30.1.jar")
 
   # create new database file
-  cm = J("hec.SqliteDatabase")$CREATION_MODE$CREATE_NEW
-  db = .jnew("hec/SqliteDatabase", ensembleFilename, cm)
+  db = .jnew("hec/SqliteDatabase", ensembleFilename, J("hec.SqliteDatabase")$CREATION_MODE$CREATE_NEW)
   # create an ensemble timeseries in Java
   recordID = .jnew("hec/RecordIdentifier", "ADOC", "FLOW")
   ensembleTS = .jnew("hec.ensemble.EnsembleTimeSeries", recordID, "cfs", "inst", "synthetic")
@@ -129,7 +128,7 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
   db$close()
 }
 
-fcstOutToEnsembleFile(paste0(outputDir, "ensemble_test2_transposed.db"))
+fcstOutToEnsembleFile(paste0(outputDir, scriptConfig$sqlFilename))
 #rm(list=ls());gc()
 
 #############################################END############################################
