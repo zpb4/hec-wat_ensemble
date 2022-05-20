@@ -38,7 +38,7 @@ setVars <- function(jsonConfig){
 eventConfig = parseConfigFile(scriptArgs[1])
 # set synthetic flows file to generate forecasts for
 syntheticFlowFile = scriptArgs[2]
-
+print(syntheticFlowFile)
 # read config file for script - this should specify a few folder names and other variables
 # comment out defintions in in other scripts and add to this file
 scriptConfig = parseConfigFile(paste0(eventConfig$Outputs$`Watershed Directory`, "synForecasts\\forecastConfig.json"))
@@ -46,7 +46,7 @@ scriptConfig = parseConfigFile(paste0(eventConfig$Outputs$`Watershed Directory`,
 setVars(scriptConfig)
 
 # seed needs to vary by integer - WAT's event random number isn't sufficient
-set.seed(eventConfig$Randoms$`Event Randoms` * eventConfig$Indices$`Lifecycle Number`)
+set.seed(as.integer(eventConfig$Indices$`Event Number` * eventConfig$Indices$`Lifecycle Number`))
 
 # Set directory for output
 outputDir = paste0(eventConfig$Outputs$`Run Directory`, "..\\") # one level up, but being lazy
