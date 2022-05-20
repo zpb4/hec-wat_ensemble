@@ -62,6 +62,6 @@ source("wat_synthetics-gen_cmean.R")
 source("syn-hefs_out_tsensembles.R")
 
 #remove variables and clean environment
-if(useGC){
-  rm(list=ls());gc()
-}
+#if(scriptConfig$useGC){
+#  rm(list=ls());gc()
+#}
