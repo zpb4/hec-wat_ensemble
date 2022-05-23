@@ -1,13 +1,14 @@
 {
-    "scriptDir": "synForecasts\\",
-    "scriptDataDir": "data\\",
-    "forecastFitDir": "fit\\",
-    "leads": 14,
-    "ens_num": 68,
-    "ar": 3,
-    "use_observed_flows": false,
-
-    "sqlFilename": "ensembles.db",
+    "forecast_generator_config": {
+        "scriptDir": "synForecasts\\",
+        "scriptDataDir": "data\\",
+        "forecastFitDir": "fit\\",
+        "leads": 14,
+        "ens_num": 68,
+        "ar": 3,
+        "use_observed_flows": false,
+        "sqlFilename": "ensembles.db"    
+    },
     "java_config": {
         "java_libraries": [
             "C:/Projects/Prado_WAT_FIRO_Dev/FIRO_TSEnsembles/FIRO_TSEnsembles/build/libs/FIRO_TSEnsembles-1.0.1.jar",
@@ -16,6 +17,8 @@
         "java_home" : "C:/Programs/jdk-11.0.15+10-jre",
         "rjava_libloc": "C:/programs/R/win-library/4.1/"
     },
-
-    "useGC": false
+    "r_config": {
+        "RScriptExe": "C:/Programs/R_portable/R-4.1.2/bin/Rscript.exe",
+        "RScriptFile": "synForecasts/wat_launcher.R"
+    }
 }

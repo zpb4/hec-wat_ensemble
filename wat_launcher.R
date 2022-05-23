@@ -43,7 +43,7 @@ print(syntheticFlowFile)
 # comment out defintions in in other scripts and add to this file
 scriptConfig = parseConfigFile(paste0(eventConfig$Outputs$`Watershed Directory`, "synForecasts\\forecastConfig.json"))
 # use this to unpack config variables that we turn off in wat_synthetics-...
-setVars(scriptConfig)
+setVars(scriptConfig$forecast_generator_config)
 
 # seed needs to vary by integer - WAT's event random number isn't sufficient
 set.seed(as.integer(eventConfig$Indices$`Event Number` * eventConfig$Indices$`Lifecycle Number`))
