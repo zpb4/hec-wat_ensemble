@@ -40,6 +40,12 @@ hefs_mat<-readRDS(paste0('data/', loc, '_hefs_ens_forc.rds'))
 #scale by 1000 to convert from kcfs to cfs
 hefs_mat<-hefs_mat[,hefs_idx,]*1000
 
+# Drop members that create extreme outliers
+dropMembers = c(14,60)
+keepMembers = which(!(1:ens_num %in% dropMembers))
+hefs_mat = hefs_mat[keepMembers,,]
+ens_num = length(keepMembers)
+
 #for loop to do across all `ens_num` ensembles, takes a while to fit all samples so 
 #might want to comment this out to just play around with a single ensemble
 print(Sys.time()) #start time 
