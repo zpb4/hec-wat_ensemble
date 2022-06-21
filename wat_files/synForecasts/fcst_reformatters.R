@@ -10,11 +10,9 @@ meltForecasts <- function(fcstMatrix){
 }
 
 # compute percentiles
-summarizeForecasts <- function(fcstDF, fcstLead=3, p=c(0, 0.05, 0.5, 0.95, 1), dropMembers=c()){
+summarizeForecasts <- function(fcstDF, fcstLead=3, p=c(0, 0.05, 0.5, 0.95, 1)){
   #fcstDF$day = fcstDF$day+fcstLead
-  keepMembers = unique(fcstDF$ens_num)
-  keepMembers = keepMembers[which(!(keepMembers %in% dropMembers))]
-  ddply(subset(fcstDF, lead==fcstLead & ens_num %in% keepMembers), .(day), 
+  ddply(subset(fcstDF, lead==fcstLead), .(day), 
         function(df){
           data.frame(percentiles=paste0("p", p), flow=quantile(df$flow, p))
         })

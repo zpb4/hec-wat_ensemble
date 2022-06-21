@@ -1,19 +1,17 @@
 #Script to fit conditional mean, VAR, and GL model to forecast residuals and create
 #Schaake shuffled empirical copula to sample from
 
-#setwd('h:/firo_lamc/ensemble-will/')
+setwd('h:/firo_lamc/ensemble-will/')
 library(fGarch)
 library(BigVAR)
 
-ens_num <- 68 #no of ensemble members
+ens_num <- 61 #no of ensemble members
 leads <- 14 #total number of lead times
 ar<-3 #lags for VAR model
-loc<-"ADOC1"
 
 #1) Read in observed and simulated inflows
-inf<-read.csv('data/ADOC_inflow.csv')
-colnames(inf) <- c("GMT", "ADOC", "OCWD")
-obs<-inf[which(inf$GMT=='10/15/1985 12:00'):which(inf$GMT=='9/30/2010 12:00'),2] # col 2 is obsv ADOC flow
+inf<-read.csv('data/LAMC_local.csv')
+obs<-inf[which(inf$GMT=='10/15/1985 12:00'):which(inf$GMT=='9/30/2010 12:00'),5] #col 5 is LAMC observations
 
 #set negative fnf observations to zero
 obs[obs<0]<-0
@@ -35,18 +33,12 @@ cond_mean<-function(Q,f){
 }
 
 #forecast matrices
-hefs_mat<-readRDS(paste0('data/', loc, '_hefs_ens_forc.rds'))
+lamc_hefs<-readRDS('data/lamc_hefs_ens_forc.rds')
 
 #scale by 1000 to convert from kcfs to cfs
-hefs_mat<-hefs_mat[,hefs_idx,]*1000
+lamc_hefs<-lamc_hefs[,hefs_idx,]*1000
 
-# Drop members that create extreme outliers
-dropMembers = c(14,60)
-keepMembers = which(!(1:ens_num %in% dropMembers))
-hefs_mat = hefs_mat[keepMembers,,]
-ens_num = length(keepMembers)
-
-#for loop to do across all `ens_num` ensembles, takes a while to fit all samples so 
+#for loop to do across all 61 ensembles, takes a while to fit all samples so 
 #might want to comment this out to just play around with a single ensemble
 print(Sys.time()) #start time 
 
@@ -65,7 +57,7 @@ for(e in 1:ens_num){
   #calculate raw residuals based on conditional mean (cmean) estimation (by month)
   for(i in 1:12){
     seas<-which(ix2$mon==(i-1))
-    sim_inf<-hefs_mat[e,seas,]
+    sim_inf<-lamc_hefs[e,seas,]
     obs_inf<-obs_mat[seas,]
     cmean_inf<-array(NA,dim(obs_inf))
       for(j in 1:leads){
@@ -83,9 +75,8 @@ for(e in 1:ens_num){
   for(i in 1:12){
     seas<-which(ix2$mon==(i-1))
     rresid_mat<-rresids[e,seas,]
-    mc = list(intercept=F, MN=F) # model controls variable
     m1 = constructModel(rresid_mat, p = ar, struct = "Basic", gran = c(25, 10),IC = F,
-                      verbose = F, VARX = list(), separate_lambdas = F, model.controls = mc)
+                      verbose = F, VARX = list(),MN = F, separate_lambdas = F,intercept = F)
     m1_res = cv.BigVAR(m1)
   
     var_coefs[e,i,,]<-m1_res@betaPred[,2:length(m1_res@betaPred[1,])]
@@ -129,15 +120,15 @@ for(e in 1:ens_num){
 
 
 #save matrices in R data structure format
-saveRDS(rresids,paste0('fit/', loc, '_rresids_cm.rds'))
-saveRDS(cmean,paste0('fit/', loc, '_cmean.rds'))
-saveRDS(ats,paste0('fit/', loc, '_ats_cm.rds'))
-saveRDS(uc_resid,paste0('fit/', loc, '_uc_resid_cm.rds'))
+saveRDS(rresids,'fit/rresids_cm.rds')
+saveRDS(cmean,'fit/cmean.rds')
+saveRDS(ats,'fit/ats_cm.rds')
+saveRDS(uc_resid,'fit/uc_resid_cm.rds')
 
-saveRDS(gl_par_arr,paste0('fit/', loc, '_gl_par_arr_cm.rds'))
-saveRDS(var_coefs,paste0('fit/', loc, '_var_coefs_cm.rds'))
+saveRDS(gl_par_arr,'fit/gl_par_arr_cm.rds')
+saveRDS(var_coefs,'fit/var_coefs_cm.rds')
 
 #remove variables and clean environment
-#rm(list=ls());gc()
+rm(list=ls());gc()
 
 ############################################END#########################################################

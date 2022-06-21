@@ -26,7 +26,7 @@ loc <- "ADOC1"
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
 
-use_observed_flows = T # use obs dataset?
+use_observed_flows = F # use obs dataset?
 # if false, use this file
 #syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
 #outputDir = "out\\" # local output
@@ -44,19 +44,15 @@ obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 
 #3. Define observed data matrix to create synthetic samples
 if(use_observed_flows){
-  # set some directories:
-  forecastFitDir = "fit/"
-  outputDir = "out/"
-  
   #Define s start in year, month, and day; minimum 1948-10-01
-  st_yr <- 1990 #4 digit year
+  st_yr <- 1991 #4 digit year
   st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
   st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
   
   #Define simulation end in year, month, and day; maximum 2010-09-30
-  end_yr <- 2000 #4 digit year
-  end_mo <- 09 #specify with leading zero for single digits, e.g. '01' instead of '1'
-  end_dy <- 30 #specify with leading zero for single digits, e.g. '01' instead of '1'
+  end_yr <- 1992 #4 digit year
+  end_mo <- 03 #specify with leading zero for single digits, e.g. '01' instead of '1'
+  end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
 
   st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
   end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
@@ -135,7 +131,7 @@ for(m in 1:n){
   print(paste(m,Sys.time()))
 }
 
-saveRDS(syn_ecop, paste0(outputDir, loc, '_syn_ecop_cm.rds'))
+#saveRDS(syn_ecop, paste0(outputDir, loc, '_syn_ecop_cm.rds'))
 
 #-------------------------------------------------------------------------------------------------------
 #5) Synthetic Generation
@@ -318,14 +314,14 @@ for(m in 1:n){
     }
   }
   print(paste(m,Sys.time())) #keep track of progress, verbose
-  saveRDS(syn_hefs_flow,  paste0(outputDir, loc, '_syn_hefs_flow_cm.rds'))
+  #saveRDS(syn_hefs_flow,  paste0(outputDir, loc, '_syn_hefs_flow_cm.rds'))
   #saveRDS(syn_hefs_resid, paste0(outputDir, loc, '_syn_hefs_resid_cm.rds') #commented out, you probably don't really need the forecast residuals for anything
 }
 
 if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
 
 # create plots?
-source("diagnostics.R")
+#source("diagnostics.R")
 # write out to sqlite file?
 #source("syn-hefs_out_tsensembles.R")
 

@@ -93,8 +93,7 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
   # Security settings won't let JRE connect if rJava is in user home
   require(rJava, lib.loc=scriptConfig$java_config$rjava_libloc)
   # add TSEnsembles library and dependencies to class path
-  .jinit(classpath="C:/Projects/Prado_WAT_FIRO_Dev/FIRO_TSEnsembles/FIRO_TSEnsembles/build/libs/FIRO_TSEnsembles-1.0.1.jar")
-  .jaddClassPath("C:/Projects/Prado_WAT_FIRO_Dev/FIRO_TSEnsembles/FIRO_TSEnsembles/runtime/sqlite-jdbc-3.30.1.jar")
+  .jinit(classpath=scriptConfig$java_config$java_libraries)
 
   # create new database file
   db = .jnew("hec/SqliteDatabase", ensembleFilename, J("hec.SqliteDatabase")$CREATION_MODE$CREATE_NEW)
@@ -128,7 +127,8 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
   db$close()
 }
 
-fcstOutToEnsembleFile(paste0(outputDir, scriptConfig$sqlFilename))
+fcstOutToEnsembleFile(paste0(outputDir, scriptConfig$forecast_generator_config
+                             $sqlFilename))
 #rm(list=ls());gc()
 
 #############################################END############################################

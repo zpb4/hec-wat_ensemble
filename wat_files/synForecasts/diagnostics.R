@@ -20,11 +20,11 @@ obsdf = data.frame(flow=new_obs, day=ix_sim)
 # create tidy table of synthetics for ggploting
 synFcsts = meltForecasts(syn_hefs_flow[1,,,])
 # create same tidy table of HEFS
-#hefsFcsts = meltForecasts(hefs_mat[,which(ix2 %in% ixx_sim),])
+hefsFcsts = meltForecasts(hefs_mat[,which(ix2 %in% ixx_sim),])
 
 # create summary plots
-sumSynFcsts = summarizeForecasts(synFcsts, fcstLead=3, dropMembers=c(14,60))
-#sumHefsFcsts = summarizeForecasts(hefsFcsts, fcstLead=3)
+sumSynFcsts = summarizeForecasts(synFcsts, fcstLead=3)
+sumHefsFcsts = summarizeForecasts(hefsFcsts, fcstLead=3)
   
 rangeSynFcsts = flipForecastSummary(sumSynFcsts)
 #rangeHefsFcsts = flipForecastSummary(sumHefsFcsts)

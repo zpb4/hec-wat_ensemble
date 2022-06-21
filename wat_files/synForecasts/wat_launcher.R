@@ -6,6 +6,7 @@
 # Functions to parses a configuration file from WAT's "RunRCmd" script and
 # unpack into environment if needed
 require(rjson)
+require(stringr)
 
 # just a check that we got here from WAT
 #require(tcltk)
@@ -49,7 +50,7 @@ setVars(scriptConfig$forecast_generator_config)
 set.seed(as.integer(eventConfig$Indices$`Event Number` * eventConfig$Indices$`Lifecycle Number`))
 
 # Set directory for output
-outputDir = paste0(eventConfig$Outputs$`Run Directory`, "..\\") # one level up, but being lazy
+outputDir = str_replace_all(eventConfig$Outputs$`Run Directory`, fixed("\\Scripting"), "") # one level up, but being lazy
 
 # Finally source WAT forecast generator
 # Would like to do this all in the watershed at some point
