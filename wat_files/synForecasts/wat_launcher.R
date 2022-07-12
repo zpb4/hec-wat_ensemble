@@ -3,6 +3,7 @@
 # 
 # Runs R from a WAT jython scripting plugin
 #
+.libPaths("C:\\programs\\r\\win-library\\4.1")
 # Functions to parses a configuration file from WAT's "RunRCmd" script and
 # unpack into environment if needed
 require(rjson)

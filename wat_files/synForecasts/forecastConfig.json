@@ -16,6 +16,7 @@
         ],
         "java_home" : "C:/Programs/jdk-11.0.15+10-jre",
         "rjava_libloc": "C:/programs/R/win-library/4.1/"
+        "jvmArgs":  "-Djava.io.tmpdir=C:\\Temp\\FIRO_TSEnsembles"
     },
     "r_config": {
         "RScriptExe": "C:/Programs/R_portable/R-4.1.2/bin/Rscript.exe",

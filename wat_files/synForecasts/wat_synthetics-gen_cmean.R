@@ -131,7 +131,7 @@ for(m in 1:n){
   print(paste(m,Sys.time()))
 }
 
-#saveRDS(syn_ecop, paste0(outputDir, loc, '_syn_ecop_cm.rds'))
+saveRDS(syn_ecop, paste0(outputDir, loc, '_syn_ecop_cm.rds'))
 
 #-------------------------------------------------------------------------------------------------------
 #5) Synthetic Generation
