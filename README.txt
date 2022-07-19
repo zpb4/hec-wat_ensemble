@@ -19,27 +19,33 @@ Repository - 'hec-wat_ensemble':
 
 		**'lamc_synthetic-gen_cmean' and 'syn_hefs_out' output synthetic ensembles and required metadata to this directory
 
-	Sub directory - 'fitting_process':
+	Sub directory - 'common':
 
 	'GL_maineqs': Primary equations for generalized likelihood (GL) function used to fit distributions
 	'GL_subeqs': Required sub-equations for GL functionality
+
+	Sub directory - 'fitting_process':
+
 	'raw_data_process': Converts daily .csv data files to R array for model fitting; outputs to 'data' sub-directory
 	'lamc_fit-model_cmean': Fits a statistical model by month and lead time to the observations and forecast data by ensemble; output to 'fit' 	sub-directory
 	'lamc_synthetic-gen_cmean': Generates synthetic ensembles of same dimension as HEFS input; output to 'out' sub-directory
 	'syn_hefs_out': Reorganizes ensembles to original forward looking format and outputs to both .xlsx and .feather formats
 		*Note: .xlsx file is a single workbook for each synthetic ensemble, .feather saves individual ensemble dataframes for each 		synthetic generation run in a single sub-directory
-	'ens_testing': A short script to plot results and verify normal operation
-		Added files (EAH, April 2022):
-	'raw_data_process.R': adapted for ADOC, generalized for other locations as much as possible; prefixes output files with location code.
+
+	Sub directory - 'output_process':
 	'diagnostics.R': ggplot script to show synthetic ensemble skill against HEFS skill
-	'adoc_fit-model_cmean.R': fitting for ADOC location, generalized except for obs inflow file columns; prefixes fitted files with location code
-	
-	Sub directory - 'wat_files'	
-		Added files (EAH, April 2022):
-	'wat_synthetic-gen_cmean.R': synthetics generation for ADOC, generalized from LAMC version.
 	'fcst_reformatters.R': transforms forecast matrix into tidy array for outputs
-	'syn_hefs_out_tsensembles.R': writes forecasts to various file types including SQLite
-	'wat_launcher.r': launches process for WAT and manages inputs
+	'ens_testing': A short script to plot results and verify normal operation
+
+	Sub directory - 'wat_files'	
+    This directory can be copied wholesale into the WAT watershed.
+  'scripts' and 'scripting': 
+    folders containing Jython script to run R process from WAT, WAT alternative file to launch script
+  'syntheticFcsts' directory:
+  	'wat_synthetic-gen_cmean.R': synthetics generation for ADOC, generalized from LAMC version.
+  	'syn_hefs_out_tsensembles.R': writes forecasts to various file types including SQLite
+  	'wat_launcher.r': launches process for WAT and manages inputs
+  	'forecast_config.json': configuration parameters needed to run script in WAT.
 
 
 	
