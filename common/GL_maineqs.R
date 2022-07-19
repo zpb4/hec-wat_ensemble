@@ -1,6 +1,6 @@
 #Main equations for Generalized Likelihood Function
 
-source('GL_subeqs.r') #bring in subequations in terms of parameters below
+source('common/GL_subeqs.r') #bring in subequations in terms of parameters below
 
 #1) GL function test that takes uncorrelated residuals(et) from VAR model
 #pars in order: 

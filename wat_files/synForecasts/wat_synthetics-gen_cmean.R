@@ -5,7 +5,7 @@ library(BigVAR)
 library(stringr)
 library(lubridate)
 
-source('GL_maineqs.R')
+source('common/GL_maineqs.R')
 #source('wat_helper.R')
 
 #date vector for fitted data
@@ -20,13 +20,13 @@ hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
 
 #1a. 'Standard' parameters that you likely won't want to change
 leads <- 14 #daily leads, should stay as 14 for HEFS
-ens_num <- 68 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
+ens_num <- 66 #no. of ensembles, model is currently fit to 61 members, so likely don't need to change
 ar <- 3 #no. of lags in vector auto-regressive model; also don't recommend changing
 loc <- "ADOC1"
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
 
-use_observed_flows = F # use obs dataset?
+use_observed_flows = T # use obs dataset?
 # if false, use this file
 #syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
 #outputDir = "out\\" # local output
@@ -44,13 +44,17 @@ obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 
 #3. Define observed data matrix to create synthetic samples
 if(use_observed_flows){
+  forecastFitDir = "fit\\"
+  outputDir = "out\\"
+  scriptDataDir = "data\\"
+  
   #Define s start in year, month, and day; minimum 1948-10-01
   st_yr <- 1991 #4 digit year
   st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
   st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
   
   #Define simulation end in year, month, and day; maximum 2010-09-30
-  end_yr <- 1992 #4 digit year
+  end_yr <- 1999 #4 digit year
   end_mo <- 03 #specify with leading zero for single digits, e.g. '01' instead of '1'
   end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
 

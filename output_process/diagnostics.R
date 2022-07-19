@@ -13,7 +13,7 @@ require(ggplot2)
 #  geom_line(data=ensFcst, aes(x=fcst.day, y=flow, group=day)) + 
 #  geom_line(data=obsdf, aes(x=day, y=flow), color="blue")
 
-source("fcst_reformatters.R")
+source("output_process/fcst_reformatters.R")
 
 # gather data
 obsdf = data.frame(flow=new_obs, day=ix_sim)
