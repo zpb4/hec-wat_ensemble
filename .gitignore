@@ -9,3 +9,6 @@ data/
 out/
 *.db
 *.db-journal
+
+#ignore the raw files for v2 provided by zdb
+v2_files/
