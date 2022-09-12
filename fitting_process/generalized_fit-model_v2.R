@@ -4,12 +4,12 @@
 library(fGarch)
 library(BigVAR)
 
-ens_num <- 68 #no of ensemble members
-leads <- 14 #total number of lead times
-ar<-3 #lags for VAR model
+#ens_num <- 68 #no of ensemble members
+#leads <- 14 #total number of lead times
+#ar<-3 #lags for VAR model
 
 #date indices, fit is calculated starting 15 days after beginning of data since full forecast data for all leads required
-ix<-seq(as.Date('1985-10-15'),as.Date('2010-09-30'),'day')
+ix<-seq(fit_start_date, fit_end_date,'day')
 ix2<-as.POSIXlt(ix)
 
 #required functions for normalization
@@ -34,8 +34,8 @@ nresids<-array(NA,c(ens_num,length(ix),leads))
 ucresids<-array(NA,c(ens_num,length(ix),leads))
 ats<-array(NA,c(ens_num,length(ix),leads))
 
-loess_mat<-readRDS('fit/adoc1_loess_mat_v2.rds')
-rresids<-readRDS('fit/adoc1_rresids_v2.rds')
+loess_mat<-readRDS(paste0('fit/', location_name, '_loess_mat_v2.rds'))
+rresids<-readRDS(paste0('fit/', location_name, '_rresids_v2.rds'))
 
 param_lst<-vector('list',ens_num)
 
@@ -135,12 +135,12 @@ for(e in 1:ens_num){
 
 
 #save matrices in R data structure format
-saveRDS(rresids,'fit/adoc1_rresids_v2.rds')
-saveRDS(nresids,'fit/adoc1_nresids_v2.rds')
-saveRDS(ucresids,'fit/adoc1_ucresids_v2.rds')
-saveRDS(ats,'fit/adoc1_ats_v2.rds')
+saveRDS(rresids,paste0('fit/', location_name, '_rresids_v2.rds'))
+saveRDS(nresids,paste0('fit/', location_name, '_nresids_v2.rds'))
+saveRDS(ucresids,paste0('fit/', location_name, '_ucresids_v2.rds'))
+saveRDS(ats,paste0('fit/', location_name, '_ats_v2.rds'))
 
-saveRDS(param_lst,'fit/adoc1_param_lst_v2.rds')
+saveRDS(param_lst,paste0('fit/', location_name, '_param_lst_v2.rds'))
 
 #remove variables and clean environment
 rm(list=ls());gc()

@@ -3,14 +3,14 @@
 
 #setwd('h:/firo_lamc/hec-wat_ensemble//')0
 
-ens_num <- 68 #no of ensemble members
-leads <- 14 #total number of lead times
-ar<-3 #lags for VAR model
+#ens_num <- 68 #no of ensemble members
+#leads <- 14 #total number of lead times
+#ar<-3 #lags for VAR model
 
 #1) Read in observed and simulated inflows
 inf<-read.csv('data/ADOC_inflow.csv')
 colnames(inf) <- c("GMT", "ADOC")
-obs<-inf[which(inf$GMT=='10/15/1985 12:00'):which(inf$GMT=='9/30/2010 12:00'),2] # col 2 is obsv ADOC flow
+obs<-inf[which(inf$GMT==fit_start):which(inf$GMT==fit_end),2] # col 2 is obsv ADOC flow
 
 
 #set negative fnf observations to zero
@@ -21,13 +21,13 @@ obs[obs<0]<-0
 obs_mat<-cbind(matrix(rep(obs,leads),ncol=leads))
 
 #date indices, fit is calculated starting 15 days after beginning of data since full forecast data for all leads required
-ix<-seq(as.Date('1985-10-15'),as.Date('2010-09-30'),'day')
+ix<-seq(fit_start_date, fit_end_date,'day')
 ix2<-as.POSIXlt(ix)
-ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day')
-hefs_idx<-which(ix3=='1985-10-15'):which(ix3=='2010-09-30')
+ix3<-seq(fit_start_date, fit_end_date,'day')
+hefs_idx<-which(ix3==fit_start_date):which(ix3==fit_end_date)
 
 #forecast matrices
-fcst_hefs<-readRDS('data/adoc1_hefs_ens_forc.rds')
+fcst_hefs<-readRDS(paste0('data/', location_name, '_hefs_ens_forc.rds'))
 
 #scale by 1000 to convert from kcfs to cfs
 fcst_hefs<-fcst_hefs[,hefs_idx,]*1000
@@ -51,7 +51,7 @@ for(i in 1:leads){
   }
 }
 
-saveRDS(loess_fit,'fit/adoc1_loess_fit_v2.rds')
+saveRDS(loess_fit,paste0('fit/', location_name, '_loess_fit_v2.rds'))
 
 #save an array of the LOESS estimated conditional mean
 loess_mat<-array(NA,c(length(ix),leads))
@@ -70,7 +70,7 @@ for(i in 1:12){
   loess_mat[seas,]<-loess_inf
 }
 
-saveRDS(loess_mat,'fit/adoc1_loess_mat_v2.rds')
+saveRDS(loess_mat,paste0('fit/', location_name, '_loess_mat_v2.rds'))
 
 #store maximum forecast values in historical period for wild hair processing
 max_val<-array(NA,c(12,leads))
@@ -80,7 +80,7 @@ for(i in 1:12){
   max_val[i,]<-apply(apply(fcst_hefs,c(2,3),max)[seas,],2,function(x){max(x,na.rm=T)})
 }
 
-saveRDS(max_val,'fit/adoc1_max_val_v2.rds')
+saveRDS(max_val,paste0('fit/', location_name, '_max_val_v2.rds'))
 
 #calculate raw residuals
 for(e in 1:ens_num){
@@ -95,7 +95,7 @@ for(e in 1:ens_num){
 
 }
 
-saveRDS(rresids,'fit/adoc1_rresids_v2.rds')
+saveRDS(rresids,paste0('fit/', location_name, '_rresids_v2.rds'))
 
 #remove variables and clean environment
 rm(list=ls());gc()

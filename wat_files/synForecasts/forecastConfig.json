@@ -6,17 +6,24 @@
         "leads": 14,
         "ens_num": 68,
         "ar": 3,
+        "env_scale": 1.5,
+        "no_samps": 1,
         "use_observed_flows": false,
         "sqlFilename": "ensembles.db"    
+        "gen_start": 
     },
     "locations": [
       {
         "name": "ADOC",
-        "hefs_dir": " ",
-        "obs_data": "data/adoc_only_inflow.csv",
+        "hefs_folder": "data/adoc_hefs/",
+        "skip_rows": 1
+        "obs_csv_file": "data/adoc_only_inflow.csv",
         "obs_column": "ADOC",
-        "start_date": "01/01/1985 12:00",
-        "end_date": "09/30/2011 12:00"
+        "fit_start": "01/01/1985 12:00",
+        "fit_end": "09/30/2011 12:00",
+        "leads": 14,
+        "ens_num": 68,
+        "ar": 3
       }
     ],
     "java_config": {

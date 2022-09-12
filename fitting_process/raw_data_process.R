@@ -10,17 +10,17 @@ library(abind)
 #
 #define folder, date/time index, and data dimensions
 #folder<-'hefs_lamc_act-meteo/' #enter lamc, ukac, hopc, hopcL
-folder<- "..\\ADOC1_sqin_HEFS_hourly\\"  # this folder has a CSV file for each issued forecast
-loc<-'ADOC1'
-ix3<-seq(as.Date('1985-10-01'),as.Date('2010-09-30'),'day') #same length
+#folder<- "..\\ADOC1_sqin_HEFS_hourly\\"  # this folder has a CSV file for each issued forecast
+#loc<-'ADOC1'
+ix3<-seq(fit_start_date,fit_end_date,'day') #same length
 ixx3<-as.POSIXlt(ix3)
-leads<-14
-ens_num<-68
-skip_rows <- 1 # this defines how many extra header lines there are, set to 0 for a single header row, 1 for double header row
+#leads<-14
+#ens_num<-68
+#skip_rows <- 1 # this defines how many extra header lines there are, set to 0 for a single header row, 1 for double header row
 
 #
 i<-1
-fname<-paste(folder,ixx3[i]$year+1900,str_pad(ixx3[i]$mon+1,2,'left','0'),str_pad(ixx3[i]$mday,2,'left','0'),'12_',loc,'_SQIN_hourly.csv',sep='')
+fname<-paste(hefs_folder,ixx3[i]$year+1900,str_pad(ixx3[i]$mon+1,2,'left','0'),str_pad(ixx3[i]$mday,2,'left','0'),'12_',location_name,'_SQIN_hourly.csv',sep='')
 dat1 <- read.csv(fname, skip=skip_rows)
 dat1[2:(24*leads+1),2:(ens_num+1)]<-NA
 
@@ -28,7 +28,7 @@ m<-length(ix3)
 hefs_raw<-array(NA,c(m,24*leads,ens_num))
 
 for(i in 1:m){
-  fname<-paste(folder,ixx3[i]$year+1900,str_pad(ixx3[i]$mon+1,2,'left','0'),str_pad(ixx3[i]$mday,2,'left','0'),'12_',loc,'_SQIN_hourly.csv',sep='')
+  fname<-paste(hefs_folder,ixx3[i]$year+1900,str_pad(ixx3[i]$mon+1,2,'left','0'),str_pad(ixx3[i]$mday,2,'left','0'),'12_',location_name,'_SQIN_hourly.csv',sep='')
   # skip first row as it has a double header in ADOC files
   dat <- tryCatch(read.csv(fname, skip=skip_rows),error = function (e){print(paste(fname,'no data'));return(dat1)},warning = function (w){print(paste(fname,'no data'));return(dat1)})
   lst_dat<-dat[2:(24*leads+1),2:(ens_num+1)]
@@ -40,7 +40,7 @@ for(i in 1:m){
   hefs_raw[i,,]<-as.numeric(as.matrix(lst_dat))
 }
 
-saveRDS(hefs_raw, paste0('data/', loc, '_hefs_raw.rds'))
+saveRDS(hefs_raw, paste0('data/', location_name, '_hefs_raw.rds'))
 
 #------------------------------------------------------------------------------------------------
 #process raw hourly hefs data into daily mean array
@@ -54,7 +54,7 @@ for(i in 1:leads){
   hefs_dly_mean[,i,]<-mn
 }
 
-saveRDS(hefs_dly_mean, paste0('data/', loc, '_hefs_dly_mean.rds'))
+saveRDS(hefs_dly_mean, paste0('data/', location_name, '_hefs_dly_mean.rds'))
 
 #----------------------------------------------------------------------------------------------------
 #Rearrange HEFS to line up observations with forecast
@@ -76,13 +76,13 @@ for(i in 1:ens_num){
   hefs_ens_forc[i,,]<-apply(hefs_ens_forc[i,,],2,na_fun)
 }
 
-saveRDS(hefs_ens_forc, paste0('data/', loc ,'_hefs_ens_forc.rds'))
+saveRDS(hefs_ens_forc, paste0('data/', location_name ,'_hefs_ens_forc.rds'))
 
 
 #calculate ensemble mean and save in array as needed
 hefs_ens_mean_forc<-apply(hefs_ens_forc,c(2,3),mean)
 
-saveRDS(hefs_ens_mean_forc, paste0('data/', loc ,'_hefs_ens_mean_forc.rds'))
+saveRDS(hefs_ens_mean_forc, paste0('data/', location_name ,'_hefs_ens_mean_forc.rds'))
 
 #remove variables and clean environment
 rm(list=ls());gc()
