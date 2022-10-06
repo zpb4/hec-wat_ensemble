@@ -142,22 +142,6 @@ saveRDS(ats,paste0('fit/', location_name, '_ats_v2.rds'))
 
 saveRDS(param_lst,paste0('fit/', location_name, '_param_lst_v2.rds'))
 
-# EAH code to check `param_lst` for NAs
-testStructNoNA = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz"),matrix(seq(16),nrow=4))
-testStructHasNA1 = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz"),matrix(rep(NA, 16),nrow=4))
-testStructHasNA2 = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz", NA),matrix(seq(16),nrow=4))
-testStructHasNA3 = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz"),matrix(seq(16),nrow=4))
-
-recursiveCheck <- function(struct, checkFunc=is.na, aggrFunc=any){
-  # if this is not a list, apply the aggregation on the check function
-  if(!is.list(struct)){
-    return(aggrFunc(checkFunc(struct)))
-  }
-  return(aggrFunc(laply(struct, recursiveCheck)))
-}
-
-recursiveCheck(param_lst)
-
 #remove variables and clean environment
 #rm(list=ls());gc()
 

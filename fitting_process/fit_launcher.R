@@ -42,6 +42,28 @@ fit_end_date = as.Date(fit_end, format="%m/%d/%Y %H:%M")
 #source("./fitting_process/generalized_init-fit-model_v2.R")
 source("./fitting_process/generalized_fit-model_v2.R")
 
+
+# EAH code to check `param_lst` for NAs
+testStructNoNA = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz"),matrix(seq(16),nrow=4))
+testStructHasNA1 = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz"),matrix(rep(NA, 16),nrow=4))
+testStructHasNA2 = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz", NA),matrix(seq(16),nrow=4))
+testStructHasNA3 = list(c(1,2,3),c("a","b"),list("foo", "bar", "baz"),matrix(seq(16),nrow=4))
+
+recursiveCheck <- function(struct, checkFunc=is.na, aggrFunc=any){
+  # if this is not a list, apply the aggregation on the check function
+  if(!is.list(struct)){
+    return(aggrFunc(checkFunc(struct)))
+  }
+  return(aggrFunc(laply(struct, recursiveCheck)))
+}
+
+if(recursiveCheck(param_lst)){
+  stop("param_lst failed recursive is.na check!")
+}
+if(recursiveCheck(loess_fit)){
+  stop("loess_fit failed recursive is.na check!")
+}
+
 #remove variables and clean environment
 rm(list=ls());gc()
 
