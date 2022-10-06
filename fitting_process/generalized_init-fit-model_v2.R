@@ -98,6 +98,6 @@ for(e in 1:ens_num){
 saveRDS(rresids,paste0('fit/', location_name, '_rresids_v2.rds'))
 
 #remove variables and clean environment
-rm(list=ls());gc()
+#rm(list=ls());gc()
 
 ############################################END#########################################################

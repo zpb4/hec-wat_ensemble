@@ -85,7 +85,7 @@ hefs_ens_mean_forc<-apply(hefs_ens_forc,c(2,3),mean)
 saveRDS(hefs_ens_mean_forc, paste0('data/', location_name ,'_hefs_ens_mean_forc.rds'))
 
 #remove variables and clean environment
-rm(list=ls());gc()
+#rm(list=ls());gc()
 
 
 ##########################################END#################################################################

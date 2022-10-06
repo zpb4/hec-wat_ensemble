@@ -1,5 +1,6 @@
 {
     "forecast_generator_config": {
+        "locationName": "ADOC1",        
         "scriptDir": "synForecasts\\",
         "scriptDataDir": "data\\",
         "forecastFitDir": "fit\\",
@@ -9,18 +10,21 @@
         "env_scale": 1.5,
         "no_samps": 1,
         "use_observed_flows": false,
-        "sqlFilename": "ensembles.db"    
-        "gen_start": 
+        "sqlFilename": "ensembles.db",    
+        "fit_start": "1/1/1985 12:00",
+        "fit_end": "9/30/2010 12:00",
+        "obs_csv_file": "data/adoc_only_inflow.csv",
+        "obs_column": 2
     },
     "locations": [
       {
-        "name": "ADOC",
-        "hefs_folder": "data/adoc_hefs/",
-        "skip_rows": 1
+        "name": "ADOC1",
+        "hefs_folder": "data/ADOC1_sqin_HEFS_hourly/",
+        "skip_rows": 1,
         "obs_csv_file": "data/adoc_only_inflow.csv",
-        "obs_column": "ADOC",
-        "fit_start": "01/01/1985 12:00",
-        "fit_end": "09/30/2011 12:00",
+        "obs_column": 2,
+        "fit_start": "1/1/1985 12:00",
+        "fit_end": "12/31/2009 12:00",
         "leads": 14,
         "ens_num": 68,
         "ar": 3

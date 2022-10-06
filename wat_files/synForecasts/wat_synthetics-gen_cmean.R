@@ -29,9 +29,8 @@ n <- 1 #no. of ensemble sets desired
 use_observed_flows = T # use obs dataset?
 # if false, use this file
 #syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
-#outputDir = "out\\" # local output
+outputDir = "out\\" # local output
 
- 
 
 #2. Read in raw observed data
 inf<-read.csv('data/adoc_inflow.csv')

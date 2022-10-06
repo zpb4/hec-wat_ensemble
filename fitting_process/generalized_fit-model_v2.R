@@ -96,7 +96,7 @@ for(e in 1:ens_num){
     seas<-which(ix2$mon==(i-1))
     rresid_mat<-nresids[e,seas,]
     m1 = constructModel(rresid_mat, p = ar, struct = "BGR", gran = c(50, 10),IC = F,
-                      verbose = F, VARX = list(),separate_lambdas = F,model.controls=list(intercept = F, MN=F))
+                      verbose = T, VARX = list(),separate_lambdas = F,model.controls=list(intercept = F, MN=F))
   
     m1_res = cv.BigVAR(m1)
   

@@ -4,6 +4,7 @@
 # Runs R from a WAT jython scripting plugin
 #
 .libPaths("C:\\programs\\r\\win-library\\4.1")
+Sys.setenv(TEMP="C:\\temp\\fcst_gen")
 # Functions to parses a configuration file from WAT's "RunRCmd" script and
 # unpack into environment if needed
 require(rjson)
@@ -15,12 +16,6 @@ require(stringr)
 #                       message = "Hello, WAT World!", icon = "info", type = "ok")
 
 scriptArgs = commandArgs(trailingOnly=TRUE)
-
-# Don't do this except to check that the args are showing up
-#s = paste(scriptArgs, sep="\n")
-#msgBox <- tkmessageBox(title = "WAT Compute",
-#                       message = s, icon = "info", type = "ok")
-
 
 # function to read JSON config file
 parseConfigFile <- function(configFileName){
