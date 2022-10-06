@@ -11,8 +11,8 @@
         "no_samps": 1,
         "use_observed_flows": false,
         "sqlFilename": "ensembles.db",    
-        "fit_start": "1/1/1985 12:00",
-        "fit_end": "9/30/2010 12:00",
+        "fit_start": "10/1/1990 12:00",
+        "fit_end": "9/30/2000 12:00",
         "obs_csv_file": "data/adoc_only_inflow.csv",
         "obs_column": 2
     },

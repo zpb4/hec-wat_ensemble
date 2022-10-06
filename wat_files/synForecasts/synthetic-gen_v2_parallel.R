@@ -360,7 +360,7 @@ print(paste('end',Sys.time()))
 
 saveRDS(synflow_out, paste('out/syn_hefs_flow_',st_mo,'-',st_dy,'-',st_yr,'_',end_mo,'-',end_dy,'-',end_yr,'_v2_parallel.rds',sep=''))
 
-rm(list=ls());gc()
+#rm(list=ls());gc()
 
 ###################################END######################################
 
