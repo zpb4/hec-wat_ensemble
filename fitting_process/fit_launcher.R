@@ -41,3 +41,7 @@ fit_end_date = as.Date(fit_end, format="%m/%d/%Y %H:%M")
 #source("./fitting_process/raw_data_process.R")
 #source("./fitting_process/generalized_init-fit-model_v2.R")
 source("./fitting_process/generalized_fit-model_v2.R")
+
+#remove variables and clean environment
+rm(list=ls());gc()
+
