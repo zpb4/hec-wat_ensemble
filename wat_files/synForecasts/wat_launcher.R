@@ -53,7 +53,11 @@ outputDir = str_replace_all(eventConfig$Outputs$`Run Directory`, fixed("\\Script
 #setwd("C:\\projects\\Prado_WAT_FIRO_Dev\\hec-wat_ensemble")
 # OR
 setwd(paste0(eventConfig$Outputs$`Watershed Directory`, scriptDir))
-source("wat_synthetics-gen_cmean.R")
+source("synthetic-gen_v2_parallel.R")
+#source("wat_synthetics-gen_cmean.R")
+
+# create plots?
+source("diagnostics.R")
 
 # write out to sqlite file?
 source("syn-hefs_out_tsensembles.R")

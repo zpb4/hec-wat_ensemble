@@ -26,7 +26,7 @@ loc <- "ADOC1"
 #1b. Primary user defined parameters to change as desired
 n <- 1 #no. of ensemble sets desired
 
-use_observed_flows = T # use obs dataset?
+use_observed_flows = F # use obs dataset?
 # if false, use this file
 #syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
 outputDir = "out\\" # local output
@@ -323,10 +323,6 @@ for(m in 1:n){
 
 if(anyNA(syn_hefs_flow)==T){stop('Bad Forecast Output')}
 
-# create plots?
-#source("diagnostics.R")
-# write out to sqlite file?
-#source("syn-hefs_out_tsensembles.R")
 
 #remove variables and clean environment
 #if(useGC){

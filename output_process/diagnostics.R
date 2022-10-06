@@ -20,11 +20,11 @@ obsdf = data.frame(flow=new_obs, day=ix_sim)
 # create tidy table of synthetics for ggploting
 synFcsts = meltForecasts(synflow_out) #syn_hefs_flow[1,,,])
 # create same tidy table of HEFS
-hefsFcsts = meltForecasts(hefs_mat[,which(ix2 %in% ixx_sim),])
+#hefsFcsts = meltForecasts(hefs_mat[,which(ix2 %in% ixx_sim),])
 
 # create summary plots
 sumSynFcsts = summarizeForecasts(synFcsts, fcstLead=3)
-sumHefsFcsts = summarizeForecasts(hefsFcsts, fcstLead=3)
+#sumHefsFcsts = summarizeForecasts(hefsFcsts, fcstLead=3)
   
 rangeSynFcsts = flipForecastSummary(sumSynFcsts)
 #rangeHefsFcsts = flipForecastSummary(sumHefsFcsts)
@@ -41,8 +41,8 @@ fcstSkillPlot <- function(rangeFcsts, pltName){
 }
 
 dateRange = paste0(ix_sim[1], " to ", tail(ix_sim,1))
-#eventPlotName = paste(eventConfig$Outputs$`Watershed Directory`, "synForecasts", sprintf("plots-event_%03d.pdf", eventConfig$Indices$`Event Number`), sep="\\")
-#print(eventPlotName)
-#ggsave(eventPlotName, fcstSkillPlot(rangeSynFcsts, paste0("Synthetic forecasts: ", dateRange)))
+eventPlotName = paste(eventConfig$Outputs$`Watershed Directory`, "synForecasts", sprintf("plots-event_%03d.pdf", eventConfig$Indices$`Event Number`), sep="\\")
+print(eventPlotName)
+ggsave(eventPlotName, fcstSkillPlot(rangeSynFcsts, paste0("Synthetic forecasts: ", dateRange)))
 
 #print(fcstSkillPlot(rangeHefsFcsts, paste0("HEFS forecasts: ", dateRange)))

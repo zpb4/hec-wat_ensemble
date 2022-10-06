@@ -27,7 +27,8 @@ parseConfigFile <- function(configFileName){
   jsonObj = fromJSON(file=configFileName)
   return(jsonObj)
 }
-scriptConfig = parseConfigFile("./wat_Files/synForecasts/forecastConfig.json")
+# handled in WAT launcher
+#scriptConfig = parseConfigFile(paste0(scriptConfig$"/synForecasts/forecastConfig.json"))
 fcstConfig = scriptConfig$forecast_generator_config
 
 #1. User defined inputs
