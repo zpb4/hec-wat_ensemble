@@ -66,7 +66,7 @@ fcstOutToExcel <- function(){
 }
 
 # write out to a feather file
-fcstOutToFeather <- function(){
+fcstOutToFeather <- function(ensembleFilename){
   require(feather)
   syn_lam_out = fcstToSynLamOut()
   
@@ -97,7 +97,10 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
   # pick something better - https://devblogs.microsoft.com/oldnewthing/20121031-00/?p=6203
   .jinit(classpath=scriptConfig$java_config$java_libraries, parameters=scriptConfig$java_config$jvmArgs)
 
-  # create new database file
+  # create fresh database file, remove if exists already
+  if(file.exists(ensembleFilename)){
+    file.remove(ensembleFilename)
+  }
   db = .jnew("hec/SqliteDatabase", ensembleFilename, J("hec.SqliteDatabase")$CREATION_MODE$CREATE_NEW)
   # create an ensemble timeseries in Java
   recordID = .jnew("hec/RecordIdentifier", "ADOC", "FLOW")
@@ -107,6 +110,8 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
   int0 = as.integer(0)
   utc_zid = .jcall("java/time/ZoneId", returnSig="Ljava/time/ZoneId;", "of", "Z")
   dur = .jcall("java/time/Duration", returnSig="Ljava/time/Duration;", "ofDays", .jlong(1))
+  print(paste0("len(ixx_sim) is ", length(ixx_sim)))
+  print(paste0("dim(syn_forc) is ", paste0(dim(syn_forc), collapse="x")))
   for(i in 1:length(ixx_sim)){ # simulation timesteps
     simts = ixx_sim[i]
     issueDate = .jcall("java/time/ZonedDateTime", returnSig="Ljava/time/ZonedDateTime;", "of", 
@@ -118,7 +123,7 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
     # - row represents ensemble members
     # - columns are time steps
     # TODO: do I need to transpose this, code works in either way?
-    ens_array = syn_forc[1,,which(simts == ixx_sim),]
+    ens_array = syn_forc[,which(simts == ixx_sim),]
     # convert to java float[][]
     ens_array = .jarray(.jfloat(ens_array), dispatch=TRUE)
     # add to ensemble TS

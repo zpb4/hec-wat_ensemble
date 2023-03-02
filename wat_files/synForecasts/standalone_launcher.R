@@ -32,41 +32,38 @@ setVars <- function(jsonConfig){
 
 
 # read metadata inputs from WAT
-eventConfig = parseConfigFile(scriptArgs[1])
+#eventConfig = parseConfigFile(scriptArgs[1])
 # set synthetic flows file to generate forecasts for
 syntheticFlowFile = scriptArgs[2]
 print(syntheticFlowFile)
 # read config file for script - this should specify a few folder names and other variables
 # comment out defintions in in other scripts and add to this file
-scriptConfig = parseConfigFile(paste0(eventConfig$Outputs$`Watershed Directory`, "synForecasts\\forecastConfig.json"))
+scriptConfig = parseConfigFile(".\\wat_files\\synForecasts\\forecastConfig.json")
+eventConfig = scriptConfig$standalone_generator
 # use this to unpack config variables that we turn off in wat_synthetics-...
-setVars(scriptConfig$forecast_generator_config)
+# let's try turning this off
+#setVars(scriptConfig$forecast_generator_config)
 
 # seed needs to vary by integer - WAT's event random number isn't sufficient
-set.seed(as.integer(eventConfig$Indices$`Event Number` * eventConfig$Indices$`Lifecycle Number`))
+set.seed(as.integer(eventConfig$seed))
 
 # Set directory for output
-outputDir = str_replace_all(eventConfig$Outputs$`Run Directory`, fixed("\\Scripting"), "") # one level up, but being lazy
+outputDir = "fcst_gen_out" #str_replace_all(eventConfig$Outputs$`Run Directory`, fixed("\\Scripting"), "") # one level up, but being lazy
 
 # Finally source WAT forecast generator
 # Would like to do this all in the watershed at some point
-#setwd("C:\\projects\\Prado_WAT_FIRO_Dev\\hec-wat_ensemble")
+setwd("C:\\projects\\Prado_WAT_FIRO_Dev\\hec-wat_ensemble")
 # OR
-setwd(paste0(eventConfig$Outputs$`Watershed Directory`, scriptDir))
+#setwd(paste0(eventConfig$Outputs$`Watershed Directory`, scriptDir))
 
-use_observed_flows = F # use obs dataset?  F for generating WAT events, T for historical data
-source("synthetic-gen_v2_parallel.R")
-#source("wat_synthetics-gen_cmean.R")
+use_observed_flows = T # use obs dataset?  F for generating WAT events, T for historical data
+source(".\\wat_files\\synForecasts\\synthetic-gen_v2_parallel.R")
+#source(".\wat_files\synForecasts\wat_synthetics-gen_cmean.R")
 
-# create plots?
+# create plots
 source(".\\common\\fcst_reformatters.R")
-plotDir = paste(eventConfig$Outputs$`Watershed Directory`, "synForecasts", sep="\\")
-source("diagnostics.R")
+plotDir = "fcst_gen_out"
+source(".\\output_process\\diagnostics.R")
 
 # write out to sqlite file?
-source("syn-hefs_out_tsensembles.R")
-
-#remove variables and clean environment
-#if(scriptConfig$useGC){
-#  rm(list=ls());gc()
-#}
+#source(".\\wat_files\\synForecasts\\syn-hefs_out_tsensembles.R")

@@ -4,6 +4,7 @@ library(doParallel) #required package for parallel ops
 library(abind) #required for parallel combining ops
 library(stringr)
 require(rjson)
+require(lubridate)
 
 # setwd('z:/hec-wat_ensemble/')
 
@@ -17,16 +18,9 @@ print(my.cluster)
 doParallel::registerDoParallel(cl = my.cluster)
 foreach::getDoParRegistered()
 
-use_observed_flows = T # use obs dataset?
+#use_observed_flows = F # use obs dataset?  F for generating WAT events, T for historical data
 # if false, use this file
-#syntheticFlowFile = "C:\\Projects\\Prado_WAT_FIRO_Dev\\Watersheds\\FIRO_Prado_Dev\\runs\\WCM_Ops\\RTestFRA\\realization 1\\lifecycle 1\\event 7\\obsTimeseries.csv"
 
-#outputDir = "out\\" # local output
-# function to read JSON config file
-parseConfigFile <- function(configFileName){
-  jsonObj = fromJSON(file=configFileName)
-  return(jsonObj)
-}
 # handled in WAT launcher
 #scriptConfig = parseConfigFile(paste0(scriptConfig$"/synForecasts/forecastConfig.json"))
 fcstConfig = scriptConfig$forecast_generator_config
@@ -65,19 +59,23 @@ obs_mat<-matrix(rep(obs,leads),ncol=leads)
 if(use_observed_flows){
   
   #Define s start in year, month, and day; minimum 1948-10-01
-  st_yr <- 1991 #4 digit year
-  st_mo <- 10 #specify with leading zero for single digits, e.g. '01' instead of '1'
-  st_dy <- 01 #specify with leading zero for single digits, e.g. '01' instead of '1'
+  st_timestamp = as.POSIXlt(fcstConfig$fit_start, format="%m/%d/%Y")
+  st_date = str_replace(as.character(st_timestamp, format="%m/%d/%Y"), fixed(" 24:00"), "")
+  st_yr = year(st_timestamp) 
+  st_mo = month(st_timestamp)
+  st_dy = day(st_timestamp)
   
   #Define simulation end in year, month, and day; maximum 2010-09-30
-  end_yr <- 1999 #4 digit year
-  end_mo <- 03 #specify with leading zero for single digits, e.g. '01' instead of '1'
-  end_dy <- 15 #specify with leading zero for single digits, e.g. '01' instead of '1'
-  
-  st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
-  end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
-  
-  new_obs<-inf[which(inf$GMT==paste(st_date,' 12:00',sep='')):which(inf$GMT==paste(end_date,' 12:00',sep='')),2]
+  end_timestamp = as.POSIXlt(fcstConfig$fit_end, format="%m/%d/%Y")
+  end_date = str_replace(as.character(end_timestamp, format="%m/%d/%Y"), fixed(" 24:00"), "")
+  end_yr = year(st_timestamp)
+  end_mo = month(st_timestamp)
+  end_dy = day(st_timestamp)
+   
+  #st_date<-paste(str_remove(st_mo,'^0'),str_remove(st_dy,'^0'),st_yr,sep='/')
+  #end_date<-paste(str_remove(end_mo,'^0'),str_remove(end_dy,'^0'),end_yr,sep='/')
+  print(paste(st_timestamp, end_timestamp, sep=" to "))
+  new_obs<-inf[which(inf$GMT==fcstConfig$fit_start):which(inf$GMT==fcstConfig$fit_end),2]
   
 } else { # WAT sampled synthetics
   new_obs_df = read.csv(syntheticFlowFile)
@@ -93,6 +91,8 @@ if(use_observed_flows){
   end_yr = year(end_timestamp)
   end_mo = month(end_timestamp)
   end_dy = day(end_timestamp)
+  print(paste(st_date, end_date, sep=" to "))
+  
 }
 
 new_obs[new_obs<0]<-0
