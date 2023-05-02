@@ -123,7 +123,8 @@ fcstOutToEnsembleFile <- function(ensembleFilename){
     # - row represents ensemble members
     # - columns are time steps
     # TODO: do I need to transpose this, code works in either way?
-    ens_array = syn_forc[,which(simts == ixx_sim),]
+    # Yes, transpose to match members and lengths
+    ens_array = t(syn_forc[,which(simts == ixx_sim),])
     # convert to java float[][]
     ens_array = .jarray(.jfloat(ens_array), dispatch=TRUE)
     # add to ensemble TS

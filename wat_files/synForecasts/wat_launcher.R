@@ -61,7 +61,7 @@ source("synthetic-gen_v2_parallel.R")
 # create plots?
 source(".\\common\\fcst_reformatters.R")
 plotDir = paste(eventConfig$Outputs$`Watershed Directory`, "synForecasts", sep="\\")
-source("diagnostics.R")
+#source("diagnostics.R")
 
 # write out to sqlite file?
 source("syn-hefs_out_tsensembles.R")
