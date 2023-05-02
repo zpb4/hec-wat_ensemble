@@ -3,8 +3,14 @@
 # 
 # Runs R from a WAT jython scripting plugin
 #
-.libPaths("C:\\programs\\r\\win-library\\4.1")
+
+scriptArgs = commandArgs(trailingOnly=TRUE)
+rDir = scriptArgs[1]
+
+
+.libPaths(file.path(rDir, "library"))
 Sys.setenv(TEMP="C:\\temp\\fcst_gen")
+
 # Functions to parses a configuration file from WAT's "RunRCmd" script and
 # unpack into environment if needed
 require(rjson)
@@ -14,8 +20,6 @@ require(stringr)
 #require(tcltk)
 #msgBox <- tkmessageBox(title = "WAT Compute",
 #                       message = "Hello, WAT World!", icon = "info", type = "ok")
-
-scriptArgs = commandArgs(trailingOnly=TRUE)
 
 # function to read JSON config file
 parseConfigFile <- function(configFileName){
@@ -30,11 +34,10 @@ setVars <- function(jsonConfig){
   }
 }
 
-
 # read metadata inputs from WAT
-eventConfig = parseConfigFile(scriptArgs[1])
+eventConfig = parseConfigFile(scriptArgs[2])
 # set synthetic flows file to generate forecasts for
-syntheticFlowFile = scriptArgs[2]
+syntheticFlowFile = scriptArgs[3]
 print(syntheticFlowFile)
 # read config file for script - this should specify a few folder names and other variables
 # comment out defintions in in other scripts and add to this file
@@ -59,8 +62,8 @@ source("synthetic-gen_v2_parallel.R")
 #source("wat_synthetics-gen_cmean.R")
 
 # create plots?
-source(".\\common\\fcst_reformatters.R")
-plotDir = paste(eventConfig$Outputs$`Watershed Directory`, "synForecasts", sep="\\")
+source(".\\output_process\\fcst_reformatters.R")
+#plotDir = paste(eventConfig$Outputs$`Watershed Directory`, "synForecasts", sep="\\")
 #source("diagnostics.R")
 
 # write out to sqlite file?
